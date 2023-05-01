@@ -39,17 +39,13 @@ jobs:
           pelican --delete-output-directory content
           mkdir final_out
           rsync -razvP --delete --exclude /CNAME --exclude /.git output/ final_out/
-      - name: create pull request
-        run: gh pr create -B base_branch -H branch_to_merge --title 'Merge branch_to_merge into base_branch' --body 'Created by Github action'
-        env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Merge with public site
-        uses: cpina/github-action-push-to-another-repository@v1.5.1
+      - name: Create PR on site
+        uses: paygoc6/action-pull-request-another-repo@v1.0.1
         env:
           API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
         with:
-          source-directory: 'final_out'
-          destination-github-username: 'andrewpollack'
-          destination-repository-name: 'this-week-in-rust.github.io'
-          user-email: andrewpkq@gmail.com
-          target-branch: dev
+          source_folder: 'final_out'
+          destination_repo: 'andrewpollack/this-week-in-rust.github.io'
+          destination_head_branch: 'deploy-${GITHUB_SHA}'
+          user_email: 'andrewpkq@gmail.com'
+          user_name: 'andrewpollack'
