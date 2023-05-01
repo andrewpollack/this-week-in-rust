@@ -8,6 +8,8 @@ on:
 jobs:
   Publish-Website:
     runs-on: ubuntu-20.04
+    container:
+      options: --user root
     env:
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
