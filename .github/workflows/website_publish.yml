@@ -12,9 +12,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-      - uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.API_TOKEN_GITHUB }}
       - name: Install Python dependencies
         uses: py-actions/py-dependency-install@v3
         with:
@@ -37,14 +34,15 @@ jobs:
       - name: Run pelican
         run: |
           pelican --delete-output-directory content
+          mkdir final_out
+          rsync -razvP --delete --exclude /CNAME --exclude /.git output/ final_out/
       - name: Merge with public site
-        run: |
-          git clone git@github.com:andrewpollack/this-week-in-rust.github.io.git
-          rsync -razvP --delete --exclude /CNAME --exclude /.git output/ this-week-in-rust.github.io/
-          cd this-week-in-rust.github.io/
-          git config --global user.name "Github Bot"
-          git add --all
-          BRANCH_PUB=`date +"%d-%m-%y"`
-          git checkout -b $BRANCH_PUB
-          git commit -m "Pushing current state of TWiR"
-          git push origin $BRANCH_PUB
+        uses: cpina/github-action-push-to-another-repository@v1.5.1
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source-directory: 'final_out'
+          destination-github-username: 'andrewpollack'
+          destination-repository-name: 'this-week-in-rust.github.io'
+          user-email: andrewpkq@gmail.com
+          target-branch: master
